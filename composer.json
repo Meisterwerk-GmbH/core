@@ -1,0 +1,14 @@
+{
+  "name": "meisterwerk/core",
+  "description": "Meisterwerk core package",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.0",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Meisterwerk\\Core\\": "src/"
+    }
+  }
+}
