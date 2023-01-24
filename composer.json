@@ -1,6 +1,6 @@
 {
   "name": "meisterwerk/core",
-  "description": "Meisterwerk core package",
+  "description": "These are functions for everything, only works for php projects",
   "license": "MIT",
   "require": {
     "php": ">=8.0"
