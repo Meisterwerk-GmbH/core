@@ -6,6 +6,9 @@ use Exception;
 
 class ExceptionHandler
 {
+    /**
+     * @deprecated please use the handleWithCare-function
+     */
     public static function handleUnexpectedError(
         \Exception|\Error $e,
         string $scope,
@@ -21,7 +24,20 @@ class ExceptionHandler
         string $scope,
         $mailingCallback,
         bool $throwOn = true
-    ) {
+    ): void {
+        self::handleWithCareInner($e, $scope, $mailingCallback, $throwOn);
+    }
+
+    /**
+     * This function is wrapped because we want to suppress the exception-handling warning for the caller of
+     * the handleWithCare function.
+     */
+    private static function handleWithCareInner(
+        \Exception|\Error $e,
+        string $scope,
+        $mailingCallback,
+        bool $throwOn = true
+    ): void {
         try {
             $mailingCallback($scope);
         } catch (\Exception|\Error) {
