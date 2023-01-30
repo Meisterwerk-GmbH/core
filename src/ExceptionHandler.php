@@ -13,6 +13,15 @@ class ExceptionHandler
         bool $throwOn = true
     ): void
     {
+        self::handleWithCare($e, $scope, $mailingCallback, $throwOn);
+    }
+
+    public static function handleWithCare(
+        \Exception|\Error $e,
+        string $scope,
+        $mailingCallback,
+        bool $throwOn = true
+    ) {
         try {
             $mailingCallback($scope);
         } catch (\Exception|\Error) {
@@ -22,5 +31,4 @@ class ExceptionHandler
             throw new \Exception('Unexpected error (' . $scope . ')', 0, $e);
         }
     }
-
 }
