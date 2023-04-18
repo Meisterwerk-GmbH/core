@@ -2,8 +2,6 @@
 
 namespace Meisterwerk\Core;
 
-use Exception;
-
 class ExceptionHandler
 {
     /**
@@ -33,18 +31,20 @@ class ExceptionHandler
      * the handleWithCare function.
      */
     private static function handleWithCareInner(
-        \Exception|\Error $e,
+        \Exception|\Error $originException,
         string $scope,
         $mailingCallback,
         bool $throwOn = true
     ): void {
         try {
             $mailingCallback($scope);
-        } catch (\Exception|\Error) {
-            throw new \Exception('Unexpected error and failed error handling (' . $scope . ')', 0, $e);
+        } catch (\Exception|\Error $mailingException) {
+            $mailingMessageAndStack = $mailingException->getMessage() . ' Trace: ' . $mailingException->getTraceAsString();
+            $wrappedMailingException = new \Exception($mailingMessageAndStack, $mailingException->getCode(), $originException);
+            throw new \Exception('Unexpected error and failed error handling (' . $scope . ')', 0, $wrappedMailingException);
         }
         if ($throwOn) {
-            throw new \Exception('Unexpected error (' . $scope . ')', 0, $e);
+            throw new \Exception('Unexpected error (' . $scope . ')', 0, $originException);
         }
     }
 }
