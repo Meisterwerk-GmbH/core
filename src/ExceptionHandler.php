@@ -2,6 +2,8 @@
 
 namespace Meisterwerk\Core;
 
+use Meisterwerk\Core\Exception\UnexpectedErrorException;
+
 class ExceptionHandler
 {
     /**
@@ -41,10 +43,10 @@ class ExceptionHandler
         } catch (\Exception|\Error $mailingException) {
             $mailingMessageAndStack = $mailingException->getMessage() . ' Trace: ' . $mailingException->getTraceAsString();
             $wrappedMailingException = new \Exception($mailingMessageAndStack, $mailingException->getCode(), $originException);
-            throw new \Exception('Unexpected error and failed error handling (' . $scope . ')', 0, $wrappedMailingException);
+            throw new UnexpectedErrorException('Unexpected error and failed error handling (' . $scope . ')', 0, $wrappedMailingException);
         }
         if ($throwOn) {
-            throw new \Exception('Unexpected error (' . $scope . ')', 0, $originException);
+            throw new UnexpectedErrorException('Unexpected error (' . $scope . ')', 0, $originException);
         }
     }
 }
