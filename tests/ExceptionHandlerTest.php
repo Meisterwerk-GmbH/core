@@ -22,16 +22,21 @@ class ExceptionHandlerTest extends TestCase
         $handler = fn () => (print 'mailing callback success');
         $scope = 'mailingCallbackTest';
 
-        $this->expectException(\Exception::class);
+        $this->expectException(UnexpectedErrorException::class);
         $this->expectExceptionMessage('Unexpected error (' . $scope . ')');
         $this->expectExceptionCode(0);
 
-        ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        try {
+            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        } catch (UnexpectedErrorException $e) {
+            $this->assertSame($exception, $e->getPrevious());
+            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        }
     }
 
     public function testUnexpectedErrorException(): void
     {
-        $exception = new UnexpectedErrorException('UnexpectedErrorTestException');
+        $exception = new \Exception('MailingCallBackTestException');
         $scope = 'unexpectedErrorTest';
         $handler = fn () => (throw new \Exception('exception in mailing callback'));
 
