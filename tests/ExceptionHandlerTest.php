@@ -8,48 +8,50 @@ class ExceptionHandlerTest extends TestCase
 {
     public function testMailingCallbackWithoutThrowOn(): void
     {
-        $exception = new \Exception('MailingCallBackTestException');
+        $originException = new \Exception('MailingCallBackTestException');
         $handler = fn () => (print 'mailing callback success');
 
         $this->expectOutputString('mailing callback success');
 
-        ExceptionHandler::handleWithCare($exception, 'mailingCallbackTest', $handler, false);
+        ExceptionHandler::handleWithCare($originException, 'mailingCallbackTest', $handler, false);
     }
 
     public function testMailingCallbackWithThrowOn(): void
     {
-        $exception = new \Exception('MailingCallBackTestException');
+        $originException = new \Exception('MailingCallBackTestException');
         $handler = fn () => (print 'mailing callback success');
         $scope = 'mailingCallbackTest';
 
-        $this->expectException(UnexpectedErrorException::class);
-        $this->expectExceptionMessage('Unexpected error (' . $scope . ')');
-        $this->expectExceptionCode(0);
-
+        $hasThrownUnexpectedException = false;
         try {
-            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+            ExceptionHandler::handleWithCare($originException, $scope, $handler);
         } catch (UnexpectedErrorException $e) {
-            $this->assertSame($exception, $e->getPrevious());
-            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+            $hasThrownUnexpectedException = true;
+            $this->assertSame($e->getMessage(), 'Unexpected error (' . $scope . ')');
+            $this->assertSame($originException, $e->getPrevious());
         }
+        $this->assertTrue($hasThrownUnexpectedException);
     }
 
     public function testUnexpectedErrorException(): void
     {
-        $exception = new \Exception('MailingCallBackTestException');
+        $originException = new \Exception('MailingCallBackTestException');
+        $mailingCallbackException = new \Exception('exception in mailing callback');
         $scope = 'unexpectedErrorTest';
-        $handler = fn () => (throw new \Exception('exception in mailing callback'));
+        $handler = fn () => (throw $mailingCallbackException);
 
-        $this->expectException(UnexpectedErrorException::class);
-        $this->expectExceptionMessage('Unexpected error and failed error handling (' . $scope . ')');
-        $this->expectExceptionCode(0);
-
+        $hasThrownUnexpectedException = false;
         try {
-            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+            ExceptionHandler::handleWithCare($originException, $scope, $handler);
         } catch (UnexpectedErrorException $e) {
-            $this->assertSame($exception, $e->getPrevious()->getPrevious());
-            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+            $hasThrownUnexpectedException = true;
+            $this->assertSame('Unexpected error and failed error handling (' . $scope . ')', $e->getMessage());
+            $this->assertStringStartsWith(
+                $mailingCallbackException->getMessage() . ' Trace: ',
+                $e->getPrevious()->getMessage()
+            );
+            $this->assertSame($originException, $e->getPrevious()->getPrevious());
         }
+        $this->assertTrue($hasThrownUnexpectedException);
     }
-
 }
