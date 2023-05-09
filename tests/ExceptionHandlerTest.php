@@ -44,7 +44,12 @@ class ExceptionHandlerTest extends TestCase
         $this->expectExceptionMessage('Unexpected error and failed error handling (' . $scope . ')');
         $this->expectExceptionCode(0);
 
-        ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        try {
+            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        } catch (UnexpectedErrorException $e) {
+            $this->assertSame($exception, $e->getPrevious()->getPrevious());
+            ExceptionHandler::handleWithCare($exception, $scope, $handler);
+        }
     }
 
 }
