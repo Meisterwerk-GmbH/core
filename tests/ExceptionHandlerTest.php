@@ -1,21 +1,10 @@
 <?php
 
-use Meisterwerk\Core\Exception\UnexpectedErrorException;
 use Meisterwerk\Core\ExceptionHandler;
 use PHPUnit\Framework\TestCase;
 
 class ExceptionHandlerTest extends TestCase
 {
-    public function testMailingCallbackWithoutThrowOn(): void
-    {
-        $originException = new \Exception('MailingCallBackTestException');
-        $handler = fn () => (print 'mailing callback success');
-
-        $this->expectOutputString('mailing callback success');
-
-        ExceptionHandler::handleWithCare($originException, 'mailingCallbackTest', $handler, false);
-    }
-
     public function testMailingCallbackWithThrowOn(): void
     {
         $originException = new \Exception('MailingCallBackTestException');
@@ -24,8 +13,8 @@ class ExceptionHandlerTest extends TestCase
 
         $hasThrownUnexpectedException = false;
         try {
-            ExceptionHandler::handleWithCare($originException, $scope, $handler);
-        } catch (UnexpectedErrorException $e) {
+            ExceptionHandler::handleUnexpectedException($originException, $scope, $handler);
+        } catch (RuntimeException $e) {
             $hasThrownUnexpectedException = true;
             $this->assertSame($e->getMessage(), 'Unexpected error (' . $scope . ')');
             $this->assertSame($originException, $e->getPrevious());
@@ -42,8 +31,8 @@ class ExceptionHandlerTest extends TestCase
 
         $hasThrownUnexpectedException = false;
         try {
-            ExceptionHandler::handleWithCare($originException, $scope, $handler);
-        } catch (UnexpectedErrorException $e) {
+            ExceptionHandler::handleUnexpectedException($originException, $scope, $handler);
+        } catch (RuntimeException $e) {
             $hasThrownUnexpectedException = true;
             $this->assertSame('Unexpected error and failed error handling (' . $scope . ')', $e->getMessage());
             $this->assertStringStartsWith(
