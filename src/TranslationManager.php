@@ -12,7 +12,7 @@ class TranslationManager
     {
         $translations = [];
         foreach ($languageKeys as $lang) {
-            $loadedFile = Yaml::parseFile("{$projectPath}/{$lang}.yml");
+            $loadedFile = Yaml::parseFile("{$projectPath}/locales/{$lang}.yml");
             $translations[$lang] = $loadedFile;
         }
         $this->translations = $translations;
