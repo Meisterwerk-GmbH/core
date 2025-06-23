@@ -8,12 +8,18 @@ class TranslationManager
 {
     private array $translations;
 
-    public function __construct(string $projectPath, array $languageKeys)
+    public function __construct(string $projectPath, array $languageKeys, string $defaultLang = 'de')
     {
         $translations = [];
         foreach ($languageKeys as $lang) {
-            $loadedFile = Yaml::parseFile("{$projectPath}/locales/{$lang}.yml");
-            $translations[$lang] = $loadedFile;
+            $filePath = "{$projectPath}/locales/{$lang}.yml";
+            if(file_exists($filePath)) {
+                $loadedFile = Yaml::parseFile($filePath);
+                $translations[$lang] = $loadedFile;
+            }
+        }
+        if(array_key_exists($defaultLang, $translations)) {
+            $translations['default'] = $translations[$defaultLang];
         }
         $this->translations = $translations;
     }
@@ -21,8 +27,20 @@ class TranslationManager
     public function getText(string $lang, string $keyString, array $templateVars = []): string
     {
         $keyArray = explode('.', $keyString);
-        $languageData = $this->translations[$lang];
-        return $this->getTextRec($languageData, $keyArray, $templateVars);
+        if(array_key_exists($lang, $this->translations)) {
+            return $this->getTextRec(
+                $this->translations[$lang],
+                $keyArray,
+                $templateVars
+            );
+        } elseif (array_key_exists('default', $this->translations)) {
+            return $this->getTextRec(
+                $this->translations['default'],
+                $keyArray,
+                $templateVars
+            );
+        }
+        return ''; //todo: handling?
     }
 
     private function getTextRec(array $languageData, array $keyArray, array $templateVars = []): string
