@@ -4,6 +4,19 @@ namespace Meisterwerk\Core;
 
 class ExceptionHandler
 {
+    public static function handleException(
+        \Exception|\Error $e,
+        string $scope,
+        $mailingCallback
+    ): void {
+        self::handleWithCare($e, $scope, $mailingCallback);
+    }
+
+    /**
+     * @deprecated please use `handleException`
+     * The function name is misleading: this isn’t an “unexpected” exception –
+     * only a failure in the mailing callback would truly be unexpected.
+     */
     public static function handleUnexpectedException(
         \Exception|\Error $e,
         string $scope,

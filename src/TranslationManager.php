@@ -6,41 +6,27 @@ use Symfony\Component\Yaml\Yaml;
 
 class TranslationManager
 {
+    private const DEFAULT_LANGUAGE = 'de';
+
+    private string $projectPath;
+
     private array $translations;
 
-    public function __construct(string $projectPath, array $languageKeys, string $defaultLang = 'de')
+    public function __construct(string $projectPath)
     {
-        $translations = [];
-        foreach ($languageKeys as $lang) {
-            $filePath = "{$projectPath}/locales/{$lang}.yml";
-            if(file_exists($filePath)) {
-                $loadedFile = Yaml::parseFile($filePath);
-                $translations[$lang] = $loadedFile;
-            }
-        }
-        if(array_key_exists($defaultLang, $translations)) {
-            $translations['default'] = $translations[$defaultLang];
-        }
-        $this->translations = $translations;
+        $this->projectPath = $projectPath;
+        $this->translations = [];
     }
 
-    public function getText(string $lang, string $keyString, array $templateVars = []): string
+    public function getText(string $keyString, string $lang = self::DEFAULT_LANGUAGE, array $templateVars = []): string
     {
+        $languageData = $this->getLanguageData($lang);
         $keyArray = explode('.', $keyString);
-        if(array_key_exists($lang, $this->translations)) {
-            return $this->getTextRec(
-                $this->translations[$lang],
-                $keyArray,
-                $templateVars
-            );
-        } elseif (array_key_exists('default', $this->translations)) {
-            return $this->getTextRec(
-                $this->translations['default'],
-                $keyArray,
-                $templateVars
-            );
-        }
-        return ''; //todo: handling?
+        return $this->getTextRec(
+            $languageData,
+            $keyArray,
+            $templateVars
+        );
     }
 
     private function getTextRec(array $languageData, array $keyArray, array $templateVars = []): string
@@ -52,5 +38,24 @@ class TranslationManager
             return sprintf($text, ...$templateVars);
         }
         return self::getTextRec($text, $keyArray, $templateVars);
+    }
+
+    private function getLanguageData(string $lang): array
+    {
+        if(!array_key_exists($lang, $this->translations)) {
+            $this->loadTranslations($lang);
+        }
+        return array_key_exists($lang, $this->translations)
+            ? $this->translations[$lang]
+            : $this->translations[self::DEFAULT_LANGUAGE];
+    }
+
+    private function loadTranslations(string $lang): void
+    {
+        $filePath = "{$this->projectPath}/locales/{$lang}.yml";
+        if(file_exists($filePath)) {
+            $loadedFile = Yaml::parseFile($filePath);
+            $this->translations[$lang] = $loadedFile;
+        }
     }
 }
