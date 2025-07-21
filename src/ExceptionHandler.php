@@ -44,8 +44,8 @@ class ExceptionHandler
     }
 
     /**
-     * @deprecated please use `handleUnexpectedException`
-     * Expected exceptions should be handled directly, because no special exception nesting will be needed.
+     * Unexpected exception will get thrown-on in any case.
+     * Expected exceptions will only get thrown-on if the mailing callback fails.
      */
     public static function handleWithCare(
         \Exception|\Error $e,
@@ -70,19 +70,15 @@ class ExceptionHandler
         try {
             $mailingCallback($scope);
         } catch (\Exception|\Error $mailingException) {
-            if ($unexpected) {
-                $mailingMessageAndStack
-                    = $mailingException->getMessage() . ' Trace: ' . $mailingException->getTraceAsString();
+            $mailingMessageAndStack
+                = $mailingException->getMessage() . ' Trace: ' . $mailingException->getTraceAsString();
+            $wrappedMailingException
+                = new \Exception($mailingMessageAndStack, $mailingException->getCode(), $originException);
+            throw new \RuntimeException(
+                'Unexpected error and failed error handling (' . $scope . ')',
+                0,
                 $wrappedMailingException
-                    = new \Exception($mailingMessageAndStack, $mailingException->getCode(), $originException);
-                throw new \RuntimeException(
-                    'Unexpected error and failed error handling (' . $scope . ')',
-                    0,
-                    $wrappedMailingException
-                );
-            } else {
-                throw $mailingException;
-            }
+            );
         }
         if ($unexpected) {
             throw new \RuntimeException('Unexpected error (' . $scope . ')', 0, $originException);
