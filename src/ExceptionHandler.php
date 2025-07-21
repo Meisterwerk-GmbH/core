@@ -4,6 +4,10 @@ namespace Meisterwerk\Core;
 
 class ExceptionHandler
 {
+    /**
+     * @deprecated please use `handleWithCare`
+     * The function name is misleading: all exceptions will get thrown-on even if they are expected
+     */
     public static function handleException(
         \Exception|\Error $e,
         string $scope,
