@@ -10,11 +10,14 @@ class TranslationManager
 
     private string $projectPath;
 
+    private string $defaultFilePath;
+
     private array $translations;
 
     public function __construct(string $projectPath)
     {
         $this->projectPath = $projectPath;
+        $this->defaultFilePath = "{$projectPath}/locales/".self::DEFAULT_LANGUAGE.".yml";
         $this->translations = [];
     }
 
@@ -56,6 +59,14 @@ class TranslationManager
         if(file_exists($filePath)) {
             $loadedFile = Yaml::parseFile($filePath);
             $this->translations[$lang] = $loadedFile;
+        } elseif (
+            !array_key_exists(self::DEFAULT_LANGUAGE, $this->translations)
+            && file_exists($this->defaultFilePath)
+        ) {
+            $defaultFile = Yaml::parseFile($this->defaultFilePath);
+            $this->translations[self::DEFAULT_LANGUAGE] = $defaultFile;
+        } else {
+            throw new \RuntimeException("default language file doesn't exist");
         }
     }
 }
