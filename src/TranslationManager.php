@@ -66,7 +66,7 @@ class TranslationManager
             $defaultFile = Yaml::parseFile($this->defaultFilePath);
             $this->translations[self::DEFAULT_LANGUAGE] = $defaultFile;
         } else {
-            throw new \RuntimeException("default language file doesn't exist");
+            throw new \RuntimeException("default language file doesn't exist: " . $filePath);
         }
     }
 }
